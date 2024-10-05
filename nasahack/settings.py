@@ -70,6 +70,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'nasahack.wsgi.application'
 
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
