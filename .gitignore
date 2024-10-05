@@ -1,8 +1,8 @@
 # Python cache
 _pycache_/
-nasaApp/_pycache_/
-nasaApp/migrations/_pycache_/
-nasatest/_pycache_/
+app/_pycache_/
+app/migrations/_pycache_/
+nasahack/_pycache_/
 *.py[cod]
 *.pyo
 
@@ -29,3 +29,7 @@ local_settings.py
 
 # Static files build output
 /staticfiles/
+
+# ignore tf models and data
+/playground/models/
+/playground/data/
