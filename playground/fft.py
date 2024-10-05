@@ -3,10 +3,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load CSV data without parsing dates
-data = pd.read_csv("data_2.csv")
+filename = "xa.s12.00.mhz.1970-01-19HR00_evid00002" # UPDATE DEPENDING ON FILE
+data = pd.read_csv(f"data/{filename}.csv")
 
 # Convert 'Time' column to datetime objects
-data['Time'] = pd.to_datetime(data['Time'])
+data['Time'] = pd.to_datetime(data[f'time_abs(%Y-%m-%dT%H:%M:%S.%f)'])
+data['Sample'] = data['velocity(m/s)']
 
 # Convert datetime to seconds (relative to the first timestamp)
 data['time_seconds'] = (data['Time'] - data['Time'].iloc[0]).dt.total_seconds()
@@ -33,7 +35,7 @@ fft_result = np.fft.fft(amplitude)
 # Frequencies corresponding to the FFT result
 frequencies = np.fft.fftfreq(len(amplitude), 1 / sampling_rate)
 
-threshold = np.percentile(np.abs(fft_result), 80) # HACE FALTA ENTROPY
+threshold = np.percentile(np.abs(fft_result), 50) # HACE FALTA ENTROPY
 positions = np.where(np.abs(fft_result) >= threshold)[0]
 
 fft_result = fft_result[positions]
