@@ -20,4 +20,7 @@ from . import views
 
 urlpatterns = [
     path('home/', views.home, name='home'),
+    path('simulation/', views.simulation, name='simulation'),
+    path('change_parameters/', views.change_parameters, name='change_parameters'),
+    path('get_events/', views.get_events, name='get_events'),
 ]

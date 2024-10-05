@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulation</title>
+  </head>
+  <body>
+    <h1>Simulation</h1>
+
+    <p id="second-display">Segundo: 0</p>
+    <table id="data-table" border="1">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Amplitude</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <button id="change-parameters">Simulate Event</button>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      let secondCount = 0;
+
+      $("#change-parameters").click(function () {
+        $.post("/change_parameters/", {}, function (response) {
+          console.log(response.status);
+        });
+      });
+
+      function updateTable(data) {
+        const tableBody = $("#data-table tbody");
+        tableBody.empty();
+        data.forEach((row) => {
+          const newRow = `<tr style="background-color: ${
+            row.number > 2.5 ? "red" : "transparent"
+          }; color: ${row.number > 2.5 ? "white" : "black"};"><td>${
+            row.timestamp
+          }</td><td>${row.number}</td></tr>`;
+          tableBody.append(newRow);
+        });
+      }
+
+      function fetchSimulationData() {
+        $.get("/simulation/", function (response) {
+          updateTable(response.data);
+        });
+      }
+
+      setInterval(function () {
+        secondCount++;
+        if (secondCount >= 60) {
+          (function () {
+            $.post("/get_events/", {}, function (response) {
+              console.log(response.status);
+            });
+          })();
+          secondCount = 1;
+        }
+        $("#second-display").text(`Segundo: ${secondCount}`);
+      }, 1000);
+
+      setInterval(fetchSimulationData, 1000);
+    </script>
+  </body>
+</html>

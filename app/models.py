@@ -17,3 +17,9 @@ class Line(models.Model):
     
     def __str__(self):
         return f"Line {self.id} at {self.time}: {self.amplitude}"
+    
+class Simulation(models.Model):
+    time = models.DateTimeField()
+    amplitude = models.FloatField()
+    start_event = models.BooleanField()
+    end_event = models.BooleanField()
