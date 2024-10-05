@@ -37,7 +37,7 @@ data_list = []
 min_range = 0
 max_range = 2.5
 start = False
-end = True
+end = False
 
 def simulation(request):
     global end, start
