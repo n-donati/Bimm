@@ -1,0 +1,31 @@
+# Python cache
+_pycache_/
+nasaApp/_pycache_/
+nasaApp/migrations/_pycache_/
+nasatest/_pycache_/
+*.py[cod]
+*.pyo
+
+# Django specific
+*.log
+*.pot
+*.pyc
+*.sqlite3
+db.sqlite3
+
+# Virtual environment
+venv/
+env/
+
+# Byte-compiled / optimized / DLL files
+*.py[cod]
+*.so
+
+# Django migrations
+**/migrations/
+
+# Local settings file (if you have any local settings)
+local_settings.py
+
+# Static files build output
+/staticfiles/
