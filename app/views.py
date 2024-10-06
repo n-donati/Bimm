@@ -18,7 +18,7 @@ import threading
 import time
 from django.views.decorators.csrf import csrf_exempt
 import base64
-from playground.pipeline import cleaning, graphing, fft, save_miniseed
+from .processing.pipeline import *
 import io
 
 
