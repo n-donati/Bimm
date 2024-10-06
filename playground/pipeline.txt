@@ -1,0 +1,5 @@
+cleaning.py: usa pandas y recibe el csv para limpiar datos
+STA.py: aplica el algoritmo STA para detectar cuando algo ocurre
+autoencoder.py: quita el ruido de la onda
+FFT.py: calcula entropia y agarra las tuplas de los puntos de frecuencia y amplitud.
+reconstruct.py: hace la FFT inversa para reconstruir el wave y la pone en un archivo miniseed.
