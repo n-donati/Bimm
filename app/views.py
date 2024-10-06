@@ -1,10 +1,14 @@
 import os
 from django.shortcuts import render, redirect
 from django.urls import reverse
+import numpy as np
 from .models import Record, Line
-from obspy import read
+from obspy import read, Stream, Trace
+from obspy.core import UTCDateTime
 from django.conf import settings
 from django.utils import timezone
+from django.http import HttpResponse
+import csv
 
 def home(request):
     if request.method == 'POST':
@@ -37,3 +41,51 @@ def home(request):
     records = Record.objects.all().order_by('-id')
     qty_records = Record.objects.count()
     return render(request, 'home.html', {'records': records, 'qty_records': qty_records})
+
+def download_csv(request, record_id):
+    record = Record.objects.get(id=record_id)
+    
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="record_{record_id}.csv"'
+    
+    writer = csv.writer(response)
+    
+    writer.writerow(['Timestamp', 'Amplitude'])
+    
+    for line in record.lines.all():
+        writer.writerow([line.time.isoformat(), line.amplitude])
+    
+    return response
+
+def download_miniseed(request, record_id):
+    record = Record.objects.get(id=record_id)
+
+    stream = Stream()
+    
+    trace = Trace()
+    
+    trace.stats.network = "NET"
+    trace.stats.station = "STA"
+    trace.stats.location = "00"
+    trace.stats.channel = "BHZ" 
+    trace.stats.sampling_rate = 100.0
+     
+    times = []
+    amplitudes = []
+    
+    for line in record.lines.all():
+        times.append(UTCDateTime(line.time))
+        amplitudes.append(line.amplitude)
+
+    trace.times = times
+
+    trace.data = np.array(amplitudes)
+
+    stream.append(trace)
+
+    response = HttpResponse(content_type='application/octet-stream')
+    response['Content-Disposition'] = f'attachment; filename="record_{record_id}.mseed"'
+
+    stream.write(response, format='MSEED')
+    
+    return response

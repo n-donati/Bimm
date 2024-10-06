@@ -20,4 +20,6 @@ from . import views
 
 urlpatterns = [
     path('home/', views.home, name='home'),
+    path('dowload_csv/<int:record_id>/', views.download_csv, name='download_csv'),
+    path('dowload_miniseed/<int:record_id>/', views.download_miniseed, name='download_miniseed'),
 ]

@@ -74,15 +74,39 @@
                                     </div>
                                     <div class="col-sm-6">
                                         <div class="btn-group btn-group-toggle float-right" data-toggle="buttons">
-                                            <label class="btn btn-sm btn-primary btn-simple active" id="0">
+                                            <label class="btn btn-sm btn-primary btn-simple active">
                                                 <input type="radio" name="options" checked />
-                                                <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Export</span>
+                                                <button  type="button" class="d-none d-sm-block d-md-block d-lg-block d-xl-block" onclick="downloadCSV()">Export CSV</button>
+                                                <span class="d-block d-sm-none">
+                                                    <i class="tim-icons icon-single-02"></i>
+                                                </span>
+                                            </label>
+                                            <label class="btn btn-sm btn-primary btn-simple active" >
+                                                <input type="radio" name="options" checked />
+                                                <button type="button" class="d-none d-sm-block d-md-block d-lg-block d-xl-block" onclick="downloadMSeed()">Export miniSEED</button>
                                                 <span class="d-block d-sm-none">
                                                     <i class="tim-icons icon-single-02"></i>
                                                 </span>
                                             </label>
                                         </div>
                                     </div>
+                                    <script>
+
+                                    let id = null;
+
+                                    function setRecordId(button) {
+                                        id = button.getAttribute('data-record-id');
+                                    }
+
+                                    function downloadCSV(){
+                                        window.location.href = "{% url 'download_csv' record_id='0' %}".replace('0', id);
+                                    }
+
+                                    function downloadMSeed(){
+                                        window.location.href = "{% url 'download_miniseed' record_id='0' %}".replace('0', id);
+                                    }
+                                    
+                                    </script>
                                 </div>
                             </div>
                             <div class="card-body" style="padding: 0">
@@ -119,7 +143,7 @@
                                                     <td>{{ record.time_start|date:"Y-m-d H:i:s" }}</td>
                                                     <td>{{ record.time_end|date:"Y-m-d H:i:s" }}</td>
                                                     <td class="text-center">
-                                                        <button class="btn btn-sm btn-primary select-record" data-record-id="{{ record.id }}">Select</button>
+                                                        <button class="btn btn-sm btn-primary select-record" data-record-id="{{ record.id }}" onclick="setRecordId(this)">Select</button>
                                                     </td>
                                                 </tr>
                                             {% empty %}
