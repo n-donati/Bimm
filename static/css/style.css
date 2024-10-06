@@ -1997,7 +1997,7 @@ pre code {
   background-color: rgba(255, 255, 255, 0.075);
 }
 
-@media (max-width: 575.98px) {
+@media (max-width: 380px) {
   .table-responsive-sm {
     display: block;
     width: 100%;
@@ -2010,7 +2010,7 @@ pre code {
   }
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 380px) {
   .table-responsive-md {
     display: block;
     width: 100%;
@@ -2023,7 +2023,7 @@ pre code {
   }
 }
 
-@media (max-width: 991.98px) {
+@media (max-width: 380px) {
   .table-responsive-lg {
     display: block;
     width: 100%;
@@ -2036,7 +2036,7 @@ pre code {
   }
 }
 
-@media (max-width: 1199.98px) {
+@media (max-width: 380px) {
   .table-responsive-xl {
     display: block;
     width: 100%;
@@ -15915,7 +15915,7 @@ img {
   font-size: 20px;
 }
 
-@media screen and (max-width: 991px) {
+@media screen and (max-width: 200px) {
   .navbar .container-fluid {
     padding-right: 15px;
     padding-left: 15px;
@@ -16812,7 +16812,7 @@ hr {
 }
 
 #tables .table-responsive {
-  margin-bottom: 30px;
+  margin-bottom: 10px;
 }
 
 table.tablesorter thead tr .header {
@@ -20385,11 +20385,11 @@ Copyright (c) 2015 Daniel Eden
 }
 
 .card-tasks {
-  height: 473px;
+  height: 385px;
 }
 
 .card-tasks .table-full-width {
-  max-height: 410px;
+  max-height: 300px;
   position: relative;
 }
 
