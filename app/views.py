@@ -65,11 +65,13 @@ start = False
 end = False
 
 def simulation(request):
-    global min_range, max_range, start, end
+    global end, start
+
+    # Pasar la imagen como contexto a la plantilla
+    
+    form = UploadCSVForm()
     graph_image = None
     graph_image2 = None
-    form = UploadCSVForm()
-
     if request.method == 'POST':
         form = UploadCSVForm(request.POST, request.FILES)
         if form.is_valid():
@@ -121,8 +123,9 @@ def simulation(request):
             image_png = graphing(times, amplitudes, 'Clean Data Graphic')
             reconstructed_data, x = fft(times, amplitudes)
             image2_png = graphing(x, reconstructed_data, 'Reconstructed Seismic Data')
-            
-            # Convert images to base64 for HTML inclusion
+            # save_miniseed(reconstructed_data, time)
+
+            # Convertir la imagen a base64 para incluirla en HTML
             graph_image = base64.b64encode(image_png).decode('utf-8')
             graph_image2 = base64.b64encode(image2_png).decode('utf-8')
            
