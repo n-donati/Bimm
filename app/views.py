@@ -1,5 +1,6 @@
 import os
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.urls import reverse
 from .models import Record, Line
 from obspy import read
 from django.conf import settings
@@ -14,7 +15,6 @@ def home(request):
                 # Check if the file has already been processed
                 if not Record.objects.filter(file_name=filename).exists():
                     st = read(file_path)
-                    
                     for trace in st:
                         time_start = trace.stats.starttime.datetime
                         time_end = trace.stats.endtime.datetime
@@ -29,6 +29,10 @@ def home(request):
                             Line.objects.create(time=current_time, amplitude=data, record=record)
                             if i == 100:
                                 break
-
-    records = Record.objects.all()
+        
+        # After processing, redirect to the same page
+        return redirect(reverse('home'))
+    
+    # If it's a GET request, or after redirecting from POST
+    records = Record.objects.all().order_by('-id')
     return render(request, 'home.html', {'records': records})
