@@ -1,8 +1,8 @@
 # Python cache
-_pycache_/
-nasaApp/_pycache_/
-nasaApp/migrations/_pycache_/
-nasatest/_pycache_/
+__pycache__/
+app/__pycache__/
+app/migrations/__pycache__/
+nasahack/__pycache__/
 *.py[cod]
 *.pyo
 
@@ -29,3 +29,6 @@ local_settings.py
 
 # Static files build output
 /staticfiles/
+/playground/data/
+
+.env

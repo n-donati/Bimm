@@ -24,9 +24,9 @@ def graphing(time, amplitude, title):
     plt.show()
 
 
-def cleaning(file):
+def cleaning(df):
     # cleaning.py
-    df = pd.read_csv(file)
+    # df = pd.read_csv(file)
     # df['column_name'] = pd.to_numeric(df['column_name'], errors='coerce')
     df['time_rel(sec)'] = df['time_rel(sec)'].fillna(method='ffill')
     df['velocity(m/s)'] = df['velocity(m/s)'].fillna(method='ffill')
@@ -201,17 +201,3 @@ def save_miniseed(reconstructed_data, time, count):
 
     # Verificar que los datos coincidan
     print(f"Primeros 10 datos de amplitud:\n{trace.data[:10]}")
-
-file = 'data/xa.s12.00.mhz.1970-01-19HR00_evid00002.csv'
-relative_time, absolute_time, amplitude = cleaning(file)
-# graphing(relative_time, amplitude, 'Raw Seismic Data')
-dataframe = autoencoder(relative_time, absolute_time, amplitude)
-quakes = sta_lta(dataframe)
-
-count = 1
-for quake in quakes:
-    print("quake", quake.shape)
-    reconstructed_data, x = fft(relative_time, quake)
-    graphing(x, reconstructed_data, 'Reconstructed Seismic Data')
-    save_miniseed(reconstructed_data, absolute_time, count)
-    count += 1

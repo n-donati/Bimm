@@ -20,6 +20,7 @@ from django.views.decorators.csrf import csrf_exempt
 import base64
 from .processing.pipeline import *
 import io
+import pandas as pd
 
 
 
@@ -76,6 +77,7 @@ def simulation(request):
     global min_range, max_range, start, end
     graph_image = None
     graph_image2 = None
+    graph_image3 = None
     form = UploadCSVForm()
 
     if request.method == 'POST':
@@ -122,22 +124,46 @@ def simulation(request):
 
                     except (ValueError, parser.ParserError) as e:
                         print(f"Error processing row: {row}. Error: {e}")
-           
-            # Generate graphs
-            image_png = graphing(times, amplitudes, 'Clean Data Graphic')
-            reconstructed_data, x = fft(times, amplitudes)
-            image2_png = graphing(x, reconstructed_data, 'Reconstructed Seismic Data')
+
+            
+            #
+            #
+            #
+            relative_time, absolute_time, amplitude = cleaning(pd.read_csv
+                                                               (csv_file))
+            print("relative_time", relative_time)
+            image_png = graphing(relative_time, amplitude, 'Raw Seismic Data')
+            
+            dataframe = autoencoder(relative_time, absolute_time, amplitude)
+            image_png2 = graphing(relative_time, dataframe, 'Autoencoder Seismic Data')
+            quakes = sta_lta(dataframe)
+
+            count = 1
+            for quake in quakes:
+                print("quake", quake.shape)
+                reconstructed_data, x = fft(relative_time, quake)
+                image_png3 = graphing(x, reconstructed_data, 'Reconstructed Seismic Data')
+                save_miniseed(reconstructed_data, absolute_time, count)
+                count += 1
+            
+            
+            
+            # # Generate graphs
+            # image_png = graphing(times, amplitudes, 'Clean Data Graphic')
+            # reconstructed_data, x = fft(times, amplitudes)
+            # image2_png = graphing(x, reconstructed_data, 'Reconstructed Seismic Data')
             
             # Convert images to base64 for HTML inclusion
             graph_image = base64.b64encode(image_png).decode('utf-8')
-            graph_image2 = base64.b64encode(image2_png).decode('utf-8')
+            graph_image2 = base64.b64encode(image_png2).decode('utf-8')
+            graph_image3 = base64.b64encode(image_png3).decode('utf-8')
            
             # Create the Record with the correct time range
             if time_start and time_end:
                 record = Record.objects.create(
                     time_start=time_start,
                     time_end=time_end,
-                    file_name=csv_file.name
+                    csv_file_name=csv_file.name
                 )
                
                 # Bulk create Line objects
@@ -149,7 +175,8 @@ def simulation(request):
                     'message': 'File uploaded and processed successfully.',
                     'form': form,
                     'graph_image': graph_image,
-                    'graph_image2': graph_image2
+                    'graph_image2': graph_image2,
+                    'graph_image3': graph_image3,
                 })
             else:
                 return render(request, 'simulation.html', {
@@ -171,7 +198,8 @@ def simulation(request):
     return render(request, 'simulation.html', {
         'form': form,
         'graph_image': graph_image,
-        'graph_image2': graph_image2
+        'graph_image2': graph_image2,
+        'graph_image3': graph_image3,
     })
 
 @csrf_exempt
