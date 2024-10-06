@@ -22,4 +22,7 @@ urlpatterns = [
     path('home/', views.home, name='home'),
     path('dowload_csv/<int:record_id>/', views.download_csv, name='download_csv'),
     path('dowload_miniseed/<int:record_id>/', views.download_miniseed, name='download_miniseed'),
+    path('simulation/', views.simulation, name='simulation'),
+    path('change_parameters/', views.change_parameters, name='change_parameters'),
+    path('get_events/', views.get_events, name='get_events'),
 ]
