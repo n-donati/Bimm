@@ -174,7 +174,9 @@ def fft(time, amplitude):
 
 # reconstruct into MINISEED
 def save_miniseed(reconstructed_data, time, count):
-    reconstructed_amplitude = reconstructed_data.real.astype(np.float32)
+    # reconstructed_amplitude = reconstructed_data.real.astype(np.float32)
+    # reconstructed_amplitude = reconstructed_data.astype(np.float32)
+    reconstructed_amplitude = np.array(reconstructed_data).astype(np.float32)
 
     # Crea una traza para el miniSEED
     trace = Trace(data=reconstructed_amplitude)  # Datos reconstruidos
