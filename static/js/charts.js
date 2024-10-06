@@ -1,96 +1,99 @@
-// Function to parse CSV data
-function parseCSV(csv) {
-    const lines = csv.trim().split('\n');
-    const headers = lines[0].split(',').map(header => header.trim());
-    return lines.slice(1).map(line => {
-        const values = line.split(',');
-        return headers.reduce((obj, header, index) => {
-            obj[header] = values[index].trim();
-            return obj;
-        }, {});
-    });
+// Global variable to store the chart instance
+let chartInstance = null;
+
+// Function to normalize time string to Date object
+function normalizeTime(timeString) {
+    return new Date(timeString);
 }
 
-// Function to load CSV file
-async function loadCSV(url) {
-    const response = await fetch(url);
-    const csv = await response.text();
-    return parseCSV(csv);
+// Function to normalize amplitude to a number
+function normalizeAmplitude(amplitudeString) {
+    return parseFloat(amplitudeString);
 }
 
-// Function to determine chart type and parameters
-function determineChartParameters(data) {
-    const numericColumns = Object.keys(data[0]).filter(key => !isNaN(parseFloat(data[0][key])));
-    const timeColumn = numericColumns.find(col => col.toLowerCase().includes('time') || col.toLowerCase().includes('date'));
-    const valueColumn = numericColumns.find(col => col !== timeColumn);
-
-    return {
-        xAxis: timeColumn || numericColumns[0],
-        yAxis: valueColumn || numericColumns[1],
-        chartType: timeColumn ? 'line' : 'scatter'
-    };
+// Function to load data from API
+async function loadData() {
+    const response = await fetch('/api/line-data/?record_id=1');
+    return await response.json();
 }
 
 // Main function to create the chart
-async function createSmartChart(csvUrl) {
-    // Load CSV data
-    const data = await loadCSV(csvUrl);
-    
-    // Determine chart parameters
-    const { xAxis, yAxis, chartType } = determineChartParameters(data);
-    
-    // Extract data for x and y axes
-    const xData = data.map(entry => parseFloat(entry[xAxis]));
-    const yData = data.map(entry => parseFloat(entry[yAxis]));
+async function createSmartChart() {
+    try {
+        // Destroy existing chart if it exists
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
 
-    // Create the chart
-    const ctx = document.getElementById('chartBig1');
-    const config = {
-        type: chartType,
-        data: {
-            labels: xData,
-            datasets: [{
-                label: `${yAxis} vs ${xAxis}`,
-                data: yData,
-                borderColor: 'rgba(75, 192, 192, 1)',
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderWidth: 2,
-                pointRadius: 5,
-                fill: false,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: `${yAxis} vs ${xAxis} Chart`
-                }
+        // Load data from API
+        const data = await loadData();
+   
+        // Extract and normalize data for x and y axes
+        const normalizedData = data.map(entry => ({
+            x: normalizeTime(entry.time),
+            y: normalizeAmplitude(entry.amplitude)
+        }));
+
+        // Create the chart
+        const ctx = document.getElementById('chartBig1');
+        const config = {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: 'Amplitude vs Time',
+                    data: normalizedData,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 1,
+                    pointRadius: 0,
+                    fill: false,
+                }]
             },
-            scales: {
-                x: {
-                    type: 'linear',
-                    position: 'bottom',
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
                     title: {
                         display: true,
-                        text: xAxis
+                        text: 'Amplitude vs Time Chart'
                     }
                 },
-                y: {
-                    type: 'linear',
-                    position: 'left',
-                    title: {
-                        display: true,
-                        text: yAxis
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'second',
+                            displayFormats: {
+                                second: 'HH:mm:ss.SSS'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Time'
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Amplitude'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value.toExponential(2);
+                            }
+                        }
                     }
                 }
-            }
-        },
-    };
-    
-    const myChart = new Chart(ctx, config);
-    window.addEventListener('resize', function() {
-        myChart.resize();
-    });
+            },
+        };
+   
+        chartInstance = new Chart(ctx, config);
+    } catch (error) {
+        console.error('Error creating chart:', error);
+    }
 }
+
+// Call this function when the DOM is loaded
+document.addEventListener('DOMContentLoaded', createSmartChart);

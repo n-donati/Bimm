@@ -1,27 +1,34 @@
-from django.shortcuts import render, redirect
-from .forms import UploadMiniSeedForm
+import os
+from django.shortcuts import render
 from .models import Record, Line
 from obspy import read
+from django.conf import settings
+from django.utils import timezone
 
 def home(request):
     if request.method == 'POST':
-        form = UploadMiniSeedForm(request.POST, request.FILES)
-        if form.is_valid():
-            mseed_file = request.FILES['file']
-            st = read(mseed_file) 
-            
-            for trace in st:
-                time_start = trace.stats.starttime
-                time_end = trace.stats.endtime
-                sampling_rate = trace.stats.sampling_rate
-                record = Record.objects.create(time_start=str(time_start), time_end=str(time_end))
-                for i, data in enumerate(trace.data):
-                    current_time = time_start + (i / sampling_rate)
-                    Line.objects.create(time=str(current_time), amplitude=data, record=record) 
-                    if (i == 100):
-                        break
+        folder_path = os.path.join(settings.BASE_DIR, 'static', 'data', 'processed')
+        for filename in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, filename)
+            if os.path.isfile(file_path):
+                # Check if the file has already been processed
+                if not Record.objects.filter(file_name=filename).exists():
+                    st = read(file_path)
+                    
+                    for trace in st:
+                        time_start = trace.stats.starttime.datetime
+                        time_end = trace.stats.endtime.datetime
+                        sampling_rate = trace.stats.sampling_rate
+                        record = Record.objects.create(
+                            time_start=time_start,
+                            time_end=time_end,
+                            file_name=filename
+                        )
+                        for i, data in enumerate(trace.data):
+                            current_time = time_start + timezone.timedelta(seconds=i / sampling_rate)
+                            Line.objects.create(time=current_time, amplitude=data, record=record)
+                            if i == 100:
+                                break
 
-    else:
-        form = UploadMiniSeedForm()
     records = Record.objects.all()
-    return render(request, 'home.html', {'form': form, 'records': records})
+    return render(request, 'home.html', {'records': records})

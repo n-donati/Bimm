@@ -24,6 +24,10 @@
         <link href="{% static 'css/style.css'%}" rel="stylesheet" />
         <!-- DEMO DEMO DEML DEML DEMO REMOVE REMOVE REMOVE REMOVE REMOVE -->
         <link href="{% static 'demo/demo.css'%}" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.1/dist/chartjs-adapter-moment.min.js"></script>
+
     </head>
 
     <body class="">
@@ -81,6 +85,15 @@
                     <!-- Add your record time content here -->
                     <p>Latest record: <span id="latest-record">00:00:00</span></p>
                     </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit">SCAN</button>
+                    </form>
+                    <ul>
+                        {% for record in records %}
+                            <li>{{record.time_start}} - {{record.file_name}}</li>
+                        {% endfor %}
+                    </ul>
                 </div>
                 </div>
             </div>
@@ -378,12 +391,8 @@
                     </div>
                     <div class="card-body">
                     <div class="chart-area">
-                        <canvas id="chartBig1" style="height: 32vh"></canvas>
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                createSmartChart("{% static 'data.csv' %}");
-                            });
-                        </script>
+                        <canvas id="chartBig1" style="width:100%; height:400px;"></canvas>
+                        <script src="{% static 'js/charts.js' %}"></script>
                     </div>
                     </div>
                 </div>
@@ -447,13 +456,11 @@
         </div>
         <div class="fixed-plugin"></div>
         <!--   Core JS Files   -->
-        <script src="js/core/jquery.min.js"></script>
+        {% comment %} <script src="js/core/jquery.min.js"></script>
         <script src="js/core/popper.min.js"></script>
         <script src="js/core/bootstrap.min.js"></script>
-        <script src="js/plugins/perfect-scrollbar.jquery.min.js"></script>
+        <script src="js/plugins/perfect-scrollbar.jquery.min.js"></script> {% endcomment %}
         <!-- Chart JS -->
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="{% static 'js/charts.js' %}"></script>
     </body>
     </html>
     
