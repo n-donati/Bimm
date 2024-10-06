@@ -63,122 +63,32 @@ max_range = 2.5
 start = False
 end = False
 
-import csv
-import base64
-from dateutil import parser
-from datetime import datetime
-import random
-from django.http import JsonResponse
-from .models import Record, Line, Simulation
-from .forms import UploadCSVForm
-from playground.pipeline import graphing, fft  # Assuming these functions are in a utils.py file
-
 def simulation(request):
-    global min_range, max_range, start, end
+    global end, start
+
+    # Pasar la imagen como contexto a la plantilla
+    
+    form = UploadCSVForm()
     graph_image = None
     graph_image2 = None
-    form = UploadCSVForm()
-
     if request.method == 'POST':
         form = UploadCSVForm(request.POST, request.FILES)
         if form.is_valid():
             csv_file = request.FILES['file']
-           
-            # Read and process the CSV file
-            csv_content = csv_file.read().decode('utf-8').splitlines()
-            csv_reader = csv.reader(csv_content)
-           
-            # Skip header if it exists
-            next(csv_reader, None)
-           
-            # Initialize variables
-            time_start = None
-            time_end = None
-            lines_to_create = []
-            times = []
-            amplitudes = []
-           
-            # Process each row
-            for row in csv_reader:
-                if len(row) >= 2:  # Ensure the row has at least 2 columns
-                    try:
-                        time = parser.parse(row[0])
-                        amplitude = float(row[1])
-                       
-                        # Update time range
-                        if time_start is None or time < time_start:
-                            time_start = time
-                        if time_end is None or time > time_end:
-                            time_end = time
-                       
-                        # Prepare Line object for bulk creation
-                        lines_to_create.append(Line(
-                            time=time,
-                            amplitude=amplitude
-                        ))
+            time, amplitude = cleaning(csv_file)
 
-                        # Collect data for graphing
-                        times.append((time - time_start).total_seconds())  # Convert to seconds from start
-                        amplitudes.append(amplitude)
-
-                    except (ValueError, parser.ParserError) as e:
-                        print(f"Error processing row: {row}. Error: {e}")
-           
-            # Generate graphs
-            image_png = graphing(times, amplitudes, 'Clean Data Graphic')
-            reconstructed_data, x = fft(times, amplitudes)
+            # Obtener la imagen en base64
+            image_png = graphing(time, amplitude, 'Clean Data Graphic')
+            reconstructed_data, x = fft(time, amplitude)
             image2_png = graphing(x, reconstructed_data, 'Reconstructed Seismic Data')
-            
-            # Convert images to base64 for HTML inclusion
+            # save_miniseed(reconstructed_data, time)
+
+            # Convertir la imagen a base64 para incluirla en HTML
             graph_image = base64.b64encode(image_png).decode('utf-8')
             graph_image2 = base64.b64encode(image2_png).decode('utf-8')
-           
-            # Create the Record with the correct time range
-            if time_start and time_end:
-                record = Record.objects.create(
-                    time_start=time_start,
-                    time_end=time_end,
-                    file_name=csv_file.name
-                )
-               
-                # Bulk create Line objects
-                for line in lines_to_create:
-                    line.record = record
-                Line.objects.bulk_create(lines_to_create)
-               
-                print(f"File '{csv_file.name}' processed. Record ID: {record.id}")
-                print(f"Time range: {time_start} to {time_end}")
-                print(f"Number of data points: {len(lines_to_create)}")
-               
-                return render(request, 'simulation.html', {
-                    'message': 'File uploaded and processed successfully.',
-                    'form': form,
-                    'graph_image': graph_image,
-                    'graph_image2': graph_image2
-                })
-            else:
-                return render(request, 'simulation.html', {
-                    'message': 'Error: No valid data found in the CSV file.',
-                    'form': form
-                })
-
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        random_number = round(random.uniform(min_range, max_range), 14)
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        line = Simulation.objects.create(time=current_time, amplitude=random_number, start_event=start, end_event=end)
-        start = False
-        end = False
-        data_list.insert(0, {'number': random_number, 'timestamp': current_time})
-        if len(data_list) > 10:
-            data_list.pop()
-        return JsonResponse({'data': data_list})
-   
-    return render(request, 'simulation.html', {
-        'form': form,
-        'graph_image': graph_image,
-        'graph_image2': graph_image2
-    })
-
+            
+            print("Nombre del archivo:", csv_file.name)
+            print("Tamaño del archivo:", csv_file.size)
 
             # if csv_file.name.endswith('.csv'):
             #     decoded_file = csv_file.read().decode('utf-8')
@@ -205,6 +115,21 @@ def simulation(request):
             #         Line.objects.create(time=str(current_time), amplitude=data, record=record) 
             #         if (i == 1000):
             #             break
+
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        random_number = round(random.uniform(min_range, max_range), 14)
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        line = Simulation.objects.create(time=current_time, amplitude=random_number, start_event=start, end_event=end)
+        start = False
+        end = False
+
+        data_list.insert(0, {'number': random_number, 'timestamp': current_time})
+
+        if len(data_list) > 10:
+            data_list.pop()
+
+        return JsonResponse({'data': data_list})
     
     return render(request, 'simulation.html', {'form': form, 'graph_image': graph_image, 'graph_image2': graph_image2})
 
