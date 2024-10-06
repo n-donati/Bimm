@@ -118,11 +118,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="card card-tasks">
-                            <div class="card-header">
-                                <form class="float-right" method="post" enctype="multipart/form-data">
-                                    {% csrf_token %} {{ form.as_p }}
-                                    <button class="btn btn-sm btn-primary btn-simple active" id="0" type="submit">Sync</button>
-                                </form>                                
+                            <div class="card-header">                              
                                 <h6 class="title d-inline">Historical</h6>
                             </div>
                             <div class="card-body">
