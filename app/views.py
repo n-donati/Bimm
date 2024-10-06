@@ -13,6 +13,7 @@ import csv
 from .forms import UploadCSVForm
 from django.http import JsonResponse
 import random
+from dateutil import parser
 from datetime import datetime
 import threading 
 import time
@@ -63,15 +64,7 @@ max_range = 2.5
 start = False
 end = False
 
-import csv
-import base64
-from dateutil import parser
-from datetime import datetime
-import random
-from django.http import JsonResponse
-from .models import Record, Line, Simulation
-from .forms import UploadCSVForm
-from playground.pipeline import graphing, fft  # Assuming these functions are in a utils.py file
+
 
 def simulation(request):
     global min_range, max_range, start, end
@@ -123,8 +116,10 @@ def simulation(request):
 
                     except (ValueError, parser.ParserError) as e:
                         print(f"Error processing row: {row}. Error: {e}")
+                        
            
             # Generate graphs
+            time, amplitude = cleaning(csv_file)
             image_png = graphing(times, amplitudes, 'Clean Data Graphic')
             reconstructed_data, x = fft(times, amplitudes)
             image2_png = graphing(x, reconstructed_data, 'Reconstructed Seismic Data')
