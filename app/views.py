@@ -13,7 +13,6 @@ import csv
 from .forms import UploadCSVForm
 from django.http import JsonResponse
 import random
-from dateutil import parser
 from datetime import datetime
 import threading 
 import time
@@ -64,14 +63,22 @@ max_range = 2.5
 start = False
 end = False
 
-def simulation(request):
-    global end, start
+import csv
+import base64
+from dateutil import parser
+from datetime import datetime
+import random
+from django.http import JsonResponse
+from .models import Record, Line, Simulation
+from .forms import UploadCSVForm
+from playground.pipeline import graphing, fft  # Assuming these functions are in a utils.py file
 
-    # Pasar la imagen como contexto a la plantilla
-    
-    form = UploadCSVForm()
+def simulation(request):
+    global min_range, max_range, start, end
     graph_image = None
     graph_image2 = None
+    form = UploadCSVForm()
+
     if request.method == 'POST':
         form = UploadCSVForm(request.POST, request.FILES)
         if form.is_valid():
@@ -93,10 +100,10 @@ def simulation(request):
            
             # Process each row
             for row in csv_reader:
-                if len(row) >= 3:  # Ensure the row has at least 2 columns
+                if len(row) >= 2:  # Ensure the row has at least 2 columns
                     try:
                         time = parser.parse(row[0])
-                        amplitude = float(row[2])
+                        amplitude = float(row[1])
                        
                         # Update time range
                         if time_start is None or time < time_start:
@@ -116,16 +123,13 @@ def simulation(request):
 
                     except (ValueError, parser.ParserError) as e:
                         print(f"Error processing row: {row}. Error: {e}")
-                     
            
             # Generate graphs
-            time, amplitude = cleaning(csv_file)
             image_png = graphing(times, amplitudes, 'Clean Data Graphic')
             reconstructed_data, x = fft(times, amplitudes)
             image2_png = graphing(x, reconstructed_data, 'Reconstructed Seismic Data')
-            # save_miniseed(reconstructed_data, time)
-
-            # Convertir la imagen a base64 para incluirla en HTML
+            
+            # Convert images to base64 for HTML inclusion
             graph_image = base64.b64encode(image_png).decode('utf-8')
             graph_image2 = base64.b64encode(image2_png).decode('utf-8')
            
@@ -141,6 +145,10 @@ def simulation(request):
                 for line in lines_to_create:
                     line.record = record
                 Line.objects.bulk_create(lines_to_create)
+               
+                print(f"File '{csv_file.name}' processed. Record ID: {record.id}")
+                print(f"Time range: {time_start} to {time_end}")
+                print(f"Number of data points: {len(lines_to_create)}")
                
                 return render(request, 'simulation.html', {
                     'message': 'File uploaded and processed successfully.',
@@ -170,6 +178,35 @@ def simulation(request):
         'graph_image': graph_image,
         'graph_image2': graph_image2
     })
+
+
+            # if csv_file.name.endswith('.csv'):
+            #     decoded_file = csv_file.read().decode('utf-8')
+            #     print("\n\nContenido del archivo CSV:\n", decoded_file, "\n\n")
+            #     io_string = io.StringIO(decoded_file)
+            #     csvFile = csv.reader(io_string, delimiter=',')
+            #     print("\n\n",csvFile, "\n\n")
+            #     for lines in csvFile:
+            #         print(lines)
+                
+            # print("Times: ", times)
+            # print("Amplitudes: ", amplitudes)
+
+
+            # st = read(csv_file) 
+            
+            # for trace in st:
+            #     time_start = trace.stats.starttime
+            #     time_end = trace.stats.endtime
+            #     sampling_rate = trace.stats.sampling_rate
+            #     record = Record.objects.create(time_start=str(time_start), time_end=str(time_end), file_name=csv_file)
+            #     for i, data in enumerate(trace.data):
+            #         current_time = time_start + (i / sampling_rate)
+            #         Line.objects.create(time=str(current_time), amplitude=data, record=record) 
+            #         if (i == 1000):
+            #             break
+    
+    return render(request, 'simulation.html', {'form': form, 'graph_image': graph_image, 'graph_image2': graph_image2})
 
 @csrf_exempt
 def change_parameters(request):
