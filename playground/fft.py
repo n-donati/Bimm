@@ -18,7 +18,7 @@ time = data['time_seconds'].values  # Time in seconds
 amplitude = data['Sample'].values  # Amplitude (seismic data) column  (Assuming 'Sample' is the amplitude column)
 
 # Determine the sampling rate? (assuming evenly spaced timestamps)
-sampling_rate = 16  # In Hz
+sampling_rate = 1/(time[1]-time[0])  # In Hz
 
 # Plot the raw data (optional)
 plt.figure(figsize=(10, 4))
@@ -35,7 +35,7 @@ fft_result = np.fft.fft(amplitude)
 # Frequencies corresponding to the FFT result
 frequencies = np.fft.fftfreq(len(amplitude), 1 / sampling_rate)
 
-threshold = np.percentile(np.abs(fft_result), 50) # HACE FALTA ENTROPY
+threshold = np.percentile(np.abs(fft_result), 80) # HACE FALTA ENTROPY
 positions = np.where(np.abs(fft_result) >= threshold)[0]
 
 fft_result = fft_result[positions]
@@ -55,9 +55,15 @@ print(np.abs(fft_result)[0:10])
 # Perform inverse FFT to reconstruct the signal
 reconstructed_data = np.fft.ifft(fft_result)
 
+# x = np.arange(0, len(reconstructed_data.real), time[1]-time[0])
+
+x = np.arange(time[0], time[len(time)-1], (time[len(time)-1]-time[0])/len(reconstructed_data.real))
+scale_factor = np.max(data['Sample']) / np.max(reconstructed_data.real)
+reconstructed_data.real *= scale_factor
+
 # Plot the reconstructed signal
 plt.figure(figsize=(10, 4))
-plt.plot(reconstructed_data.real, label="Reconstructed Data", linestyle='dashed')
+plt.plot(x, reconstructed_data.real, label="Reconstructed Data", linestyle='dashed')
 plt.title("Reconstructed Seismic Data (IFFT)")
 plt.xlabel("Time (seconds)")
 plt.ylabel("Amplitude")
