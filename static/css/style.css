@@ -2654,8 +2654,8 @@ fieldset:disabled a.btn {
 
 .btn-primary:hover {
   color: #ffffff;
-  background-color: #1a88ab;
-  border-color: #1a88ab;
+  background-color: #156f8c;
+  border-color: #156f8c;
 }
 
 .btn-primary:focus,
@@ -5178,13 +5178,13 @@ input[type="button"].btn-block {
 }
 
 .card-image {
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   margin-left: 10px; /* Adds some space between the number and the image */
 }
 
 .number {
-  font-size: 38px;
+  font-size: 40px;
   font-weight: bold;
 }
 
@@ -13098,14 +13098,14 @@ fieldset[disabled] .navbar .navbar-nav>a.btn.active {
 }
 
 .btn-primary {
-  background: #e14eca;
-  background-image: -webkit-linear-gradient(to bottom left, #e14eca, #ba54f5, #e14eca);
-  background-image: -o-linear-gradient(to bottom left, #e14eca, #ba54f5, #e14eca);
-  background-image: -moz-linear-gradient(to bottom left, #e14eca, #ba54f5, #e14eca);
-  background-image: linear-gradient(to bottom left, #e14eca, #ba54f5, #e14eca);
+  background: #156f8c;
+  background-image: -webkit-linear-gradient(to bottom left, #156f8c, #156f8c, #156f8c);
+  background-image: -o-linear-gradient(to bottom left, #156f8c, #156f8c, #156f8c);
+  background-image: -moz-linear-gradient(to bottom left, #156f8c, #156f8c, #156f8c);
+  background-image: linear-gradient(to bottom left, #156f8c, #156f8c, #156f8c);
   background-size: 210% 210%;
   background-position: top right;
-  background-color: #e14eca;
+  background-color: #156f8c;
   transition: all 0.15s ease;
   box-shadow: none;
   color: #ffffff;
@@ -13169,8 +13169,8 @@ fieldset[disabled] .btn-primary:focus,
 fieldset[disabled] .btn-primary.focus,
 fieldset[disabled] .btn-primary:active,
 fieldset[disabled] .btn-primary.active {
-  background-color: #1a88ab;
-  border-color: #1a88ab;
+  background-color: #156f8c;
+  border-color: #156f8c;
 }
 
 .btn-primary.btn-simple {
@@ -14296,11 +14296,11 @@ fieldset[disabled] .btn-link.active {
 }
 
 .dropdown-menu.dropdown-primary {
-  background-color: #df41c6;
+  background-color: #156f8c;
 }
 
 .dropdown-menu.dropdown-primary:before {
-  color: #df41c6;
+  color: #156f8c;
 }
 
 .dropdown-menu.dropdown-primary .dropdown-header:not([href]):not([tabindex]) {
