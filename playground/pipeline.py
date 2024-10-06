@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from scipy.stats import entropy
 from scipy.signal import welch
+from obspy.signal.trigger import classic_sta_lta, trigger_onset
 
 def sampling_rate(time):
     # Calculate sampling rate
@@ -38,6 +39,37 @@ def cleaning(file):
     amplitude = df['velocity(m/s)'].values  # Not really amplitude but velocity
     print('done extracting')
     return time, amplitude
+
+def sta_lta(denoised_data, time):
+    # sta_lta.py
+    sta_len = 500 # Longitud de ventana del STA
+    lta_len = 5000 # Longitud de ventana del LTA
+    cft = classic_sta_lta(denoised_data, int(sta_len), int(lta_len))
+    thr_on = 3 # On threshold 
+    thr_off = 1 # Off threshold
+    on_off = np.array(trigger_onset(cft, thr_on, thr_off))
+
+    res = []
+
+    for i in np.arange(0, len(on_off)):
+
+        # Definir rango del sismo
+        triggers = on_off[i]
+        beginning = max(triggers[0]-10000, 0)
+        for j in range(int(triggers[0])-1, int(beginning), -1):
+            if (cft[j] <= 0.5*cft[triggers[0]]):
+                beginning = j
+                break
+        end = min(triggers[1]+10000, len(denoised_data)-1)
+        for j in range(int(triggers[1])+1, int(end)):
+            if (cft[j] <= 0.3*cft[triggers[1]]):
+                end = j
+                break
+
+        # Guardar pedazo de gráfica con sismo
+        res.append([denoised_data[beginning:end], time[beginning:end]])
+
+    return res
 
 def fft(time, amplitude):
     # Compute power spectral density (PSD) using Welch's method
@@ -112,9 +144,10 @@ def save_miniseed(reconstructed_data, time):
     # Verificar que los datos coincidan
     print(f"Primeros 10 datos de amplitud:\n{trace.data[:10]}")
 
-
-time, amplitude = cleaning('data/xa.s12.00.mhz.1970-01-19HR00_evid00002.csv')
+file = 'data/xa.s12.00.mhz.1970-01-19HR00_evid00002.csv'
+time, amplitude = cleaning(file)
 graphing(time, amplitude, 'Raw Seismic Data')
+quakes = sta_lta(denoised_data, time)
 reconstructed_data, x = fft(time, amplitude)
 graphing(x, reconstructed_data, 'Reconstructed Seismic Data')
 save_miniseed(reconstructed_data, time)
