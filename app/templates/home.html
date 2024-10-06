@@ -1,0 +1,265 @@
+    {% load static %}
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, shrink-to-fit=no"
+        />
+        <link rel="icon" type="image/png" href="{% static 'img/favicon.png'$}" />
+        <title>NASA HACK</title>
+        <!--     Fonts and icons     -->
+        <link
+        href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,600,700,800"
+        rel="stylesheet"
+        />
+        <link
+        href="https://use.fontawesome.com/releases/v5.0.6/css/all.css"
+        rel="stylesheet"
+        />
+        <!-- Nucleo Icons -->
+        <link href="{% static 'css/nucleo-icons.css'%}" rel="stylesheet" />
+        <!-- CSS Files -->
+        <link href="{% static 'css/style.css'%}" rel="stylesheet" />
+        <!-- DEMO DEMO DEML DEML DEMO REMOVE REMOVE REMOVE REMOVE REMOVE -->
+        <link href="{% static 'demo/demo.css'%}" rel="stylesheet" />
+    </head>
+
+    <body class="">
+        <div class="wrapper">
+        <div class="main-panel">
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-absolute navbar-transparent">
+            <div class="container-fluid">
+                <div class="navbar-wrapper">
+                </div>
+                <div class="collapse navbar-collapse" id="navigation">
+                </div>
+            </div>
+            </nav>
+            <div
+            class="modal modal-search fade"
+            id="searchModal"
+            tabindex="-1"
+            role="dialog"
+            aria-labelledby="searchModal"
+            aria-hidden="true"
+            >
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <input
+                    type="text"
+                    class="form-control"
+                    id="inlineFormInputGroup"
+                    placeholder="SEARCH"
+                    />
+                    <button
+                    type="button"
+                    class="close"
+                    data-dismiss="modal"
+                    aria-label="Close"
+                    >
+                    <i class="tim-icons icon-simple-remove"></i>
+                    </button>
+                </div>
+                </div>
+            </div>
+            </div>
+            <!-- End Navbar -->
+            <div class="content">
+            <div class="row">
+                <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header" style="min-height: 260px">
+                    <h6 class="title d-inline">Automated reporting tool</h6>
+                    <p class="card-category d-inline" style="float: right;">Oct 5</p>
+                    </div>
+                </div>
+                </div>
+                <!-- Analisys resume section -->
+                <div class="col-md-4">
+                    <div class="row">
+                        <!-- Primer componente (arriba izquierda) -->
+                        <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header" style="min-height: 115px">
+                                    <!-- Contenido del primer componente -->
+                            </div>
+                        </div>
+                    </div>
+
+                <!-- Segundo componente (arriba derecha) -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header" style="min-height: 115px">
+                                <!-- Contenido del segundo componente -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Tercer componente (abajo izquierda) -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header" style="min-height: 115px">
+                                <!-- Contenido del tercer componente -->
+                            </div>
+                        </div>
+                    </div>
+
+                <!-- Cuarto componente (abajo derecha) -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header" style="min-height: 115px">
+                                <!-- Contenido del cuarto componente -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+            
+            <div class="row">
+                <!-- Record Time Section (1/4 width) -->
+                <div class="col-md-8">
+                <div class="card card-chart">
+                    <div class="card-header">
+                    <div class="row">
+                        <div class="col-sm-6 text-left">
+                        <h5 class="card-category">Total Shipments</h5>
+                        <h2 class="card-title">Performance</h2>
+                        </div>
+                        <div class="col-sm-6">
+                        <div
+                            class="btn-group btn-group-toggle float-right"
+                            data-toggle="buttons"
+                        >
+                            <label
+                            class="btn btn-sm btn-primary btn-simple active"
+                            id="0"
+                            >
+                            <input type="radio" name="options" checked />
+                            <span
+                                class="d-none d-sm-block d-md-block d-lg-block d-xl-block"
+                                >Export</span
+                            >
+                            <span class="d-block d-sm-none">
+                                <i class="tim-icons icon-single-02"></i>
+                            </span>
+                            </label>
+                            <!-- Add more buttons if needed -->
+                        </div>
+                        </div>
+                        <div class="card-body">
+                </div>
+                    </div>
+                    </div>
+                    <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="chartBig1" style="height: 32vh"></canvas>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                createSmartChart("{% static 'data.csv' %}");
+                            });
+                        </script>
+                    </div>
+                    </div>
+                </div>
+                </div>
+                <!-- Performance Section (3/4 width) -->
+                <div class="col-md-4">
+                <div class="card card-tasks">
+                    <div class="card-header">
+                    <h6 class="title d-inline">Historical</h6>
+                    </div>
+                    <div class="card-body">
+                    <div class="table-full-width table-responsive">
+                        <table class="table tablesorter" id="">
+                        <thead class="text-primary">
+                            <tr>
+                            <th>Name</th>
+                            <th>Country</th>
+                            <th>City</th>
+                            <th class="text-center">Salary</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                            <td>Dakota Rice</td>
+                            <td>Niger</td>
+                            <td>Oud-Turnhout</td>
+                            <td class="text-center">$36,738</td>
+                            </tr>
+                            <tr>
+                            <td>Dakota Rice</td>
+                            <td>Niger</td>
+                            <td>Oud-Turnhout</td>
+                            <td class="text-center">$36,738</td>
+                            </tr>
+                            <tr>
+                            <td>Dakota Rice</td>
+                            <td>Niger</td>
+                            <td>Oud-Turnhout</td>
+                            <td class="text-center">$36,738</td>
+                            </tr>
+                            <tr>
+                            <td>Minerva Hooper</td>
+                            <td>Curaçao</td>
+                            <td>Sinaai-Waas</td>
+                            <td class="text-center">$23,789</td>
+                            </tr>
+                            <tr>
+                            <td>Sage Rodriguez</td>
+                            <td>Netherlands</td>
+                            <td>Baileux</td>
+                            <td class="text-center">$56,142</td>
+                            </tr>
+                            <tr>
+                            <td>Philip Chaney</td>
+                            <td>Korea, South</td>
+                            <td>Overland Park</td>
+                            <td class="text-center">$38,735</td>
+                            </tr>
+                            <tr>
+                            <td>Doris Greene</td>
+                            <td>Malawi</td>
+                            <td>Feldkirchen in Kärnten</td>
+                            <td class="text-center">$63,542</td>
+                            </tr>
+                        </tbody>
+                        </table>
+                    </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            <!-- Footer -->
+            <footer class="footer">
+            <div class="container-fluid" >
+                <div class="copyright">
+                ©
+                <script>
+                    document.write(new Date().getFullYear());
+                </script>
+                made with <i class="tim-icons icon-heart-2"></i> by
+                <a href="javascript:void(0)" target="_blank">Git Push It Real Good</a> for
+                NASA.
+                </div>
+            </div>
+            </footer>
+        </div>
+        </div>
+        <div class="fixed-plugin"></div>
+        <!--   Core JS Files   -->
+        <script src="js/core/jquery.min.js"></script>
+        <script src="js/core/popper.min.js"></script>
+        <script src="js/core/bootstrap.min.js"></script>
+        <script src="js/plugins/perfect-scrollbar.jquery.min.js"></script>
+        <!-- Chart JS -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="{% static 'js/charts.js' %}"></script>
+    </body>
+    </html>
