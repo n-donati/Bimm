@@ -9,7 +9,7 @@ n3 = "xa.s12.00.mhz.1970-03-26HR00_evid00004"
 n4 = "xa.s12.00.mhz.1970-04-25HR00_evid00006"
 n5 = "xa.s12.00.mhz.1970-11-12HR00_evid00015"
 
-filename = n2 # UPDATE DEPENDING ON FILE
+filename = n3 # UPDATE DEPENDING ON FILE
 data = pd.read_csv(f"data/{filename}.csv")
 
 # Convert 'Time' column to datetime objects
@@ -41,7 +41,7 @@ fft_result = np.fft.fft(amplitude)
 # Frequencies corresponding to the FFT result
 frequencies = np.fft.fftfreq(len(amplitude), 1 / sampling_rate)
 
-threshold = np.percentile(np.abs(fft_result), 40) # HACE FALTA ENTROPY
+threshold = np.percentile(np.abs(fft_result), 80) # HACE FALTA ENTROPY
 positions = np.where(np.abs(fft_result) >= threshold)[0]
 
 fft_result = fft_result[positions]
@@ -55,8 +55,6 @@ plt.xlabel("Frequency (Hz)")
 plt.ylabel("Magnitude")
 plt.grid(True)
 plt.show()
-
-print(np.abs(fft_result)[0:10])
 
 # Perform inverse FFT to reconstruct the signal
 reconstructed_data = np.fft.ifft(fft_result)
@@ -78,5 +76,7 @@ plt.show()
 
 trace = Trace()
 trace.data = reconstructed_data.real
+trace.stats.starttime = time[0]
+trace.stats.sampling_rate = len(reconstructed_data.real)/(time[len(time)-1]-time[0])
 stream = Stream(traces=[trace])
 stream.write("data/output.mseed", format='MSEED')
