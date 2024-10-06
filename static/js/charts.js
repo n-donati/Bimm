@@ -55,7 +55,6 @@ async function createSmartChart() {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Amplitude vs Time Chart'
                     }
                 },
                 scales: {
