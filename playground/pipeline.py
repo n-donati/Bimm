@@ -94,14 +94,15 @@ def autoencoder(relative_time, absolute_time, amplitude):
 
     return combined_df
     
-def sta_lta(dataframe):
-    absolute_time = dataframe['time_abs(%Y-%m-%dT%H:%M:%S.%f)']
-    denoised_data = dataframe['velocity(m/s)']
+def sta_lta(autoencoder_dataframe, amplitude):
+    absolute_time = autoencoder_dataframe['time_abs(%Y-%m-%dT%H:%M:%S.%f)']
+    tr_times = autoencoder_dataframe["time_rel(sec)"]
+    denoised_data = autoencoder_dataframe['velocity(m/s)']
     # sta_lta.py
     sta_len = 500 # Longitud de ventana del STA
     lta_len = 5000 # Longitud de ventana del LTA
     cft = classic_sta_lta(denoised_data, int(sta_len), int(lta_len))
-    thr_on = 3 # On threshold 
+    thr_on = 9.5 # On threshold 
     thr_off = 1 # Off threshold
     on_off = np.array(trigger_onset(cft, thr_on, thr_off))
 
@@ -122,8 +123,9 @@ def sta_lta(dataframe):
                 end = j
                 break
 
-        # Guardar pedazo de gráfica con sismo
-        res.append(denoised_data[beginning:end])
+        # Guardar pedazo de gráfica con sismo de la onda ORIGINAL (raw)
+        # res.append(amplitude[beginning:end])
+        res.append((amplitude[beginning:end], absolute_time[beginning:end]))
 
     return res
 
@@ -160,7 +162,10 @@ def fft(time, amplitude):
     # Perform inverse FFT to reconstruct the signal
     reconstructed_data = np.fft.ifft(fft_result)
 
-    x = np.arange(time[0], time[len(time)-1], (time[len(time)-1]-time[0])/len(reconstructed_data.real))
+    # x = np.arange(time[0], time[len(time)-1], (time[len(time)-1]-time[0])/len(reconstructed_data.real))
+    # x = np.linspace(time[0], time[len(time) - 1], len(reconstructed_data.real))
+    x = np.linspace(time[0], time[-1], len(reconstructed_data.real))
+    
     scale_factor = np.max(amplitude) / np.max(reconstructed_data.real)
     reconstructed_data.real *= scale_factor
     
@@ -199,19 +204,21 @@ def save_miniseed(reconstructed_data, time, count):
     # Imprimir información básica de la traza
     print(f"Datos guardados: {len(trace.data)} puntos de amplitud")
 
-    # Verificar que los datos coincidan
     print(f"Primeros 10 datos de amplitud:\n{trace.data[:10]}")
 
 file = 'data/xa.s12.00.mhz.1970-01-19HR00_evid00002.csv'
 relative_time, absolute_time, amplitude = cleaning(file)
-# graphing(relative_time, amplitude, 'Raw Seismic Data')
-dataframe = autoencoder(relative_time, absolute_time, amplitude)
-quakes = sta_lta(dataframe)
+autoencoder_dataframe = autoencoder(relative_time, absolute_time, amplitude)
+graphing(relative_time, amplitude, 'post-autoencoder Seismic Data')
+quakes = sta_lta(autoencoder_dataframe, amplitude)
 
 count = 1
-for quake in quakes:
+for quake, quake_time in quakes:
+    quake_time = np.array(quake_time)
     print("quake", quake.shape)
-    reconstructed_data, x = fft(relative_time, quake)
+    reconstructed_data, x = fft(quake_time, quake)
+    print(reconstructed_data.shape)
+    print(x.shape)
     graphing(x, reconstructed_data, 'Reconstructed Seismic Data')
-    save_miniseed(reconstructed_data, absolute_time, count)
+    save_miniseed(reconstructed_data, quake_time, count)
     count += 1
