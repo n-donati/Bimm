@@ -38,20 +38,29 @@
                     <div class="col-md-4">
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header" style="min-height: 115px">{{qty_records}}</div>
+                                <div class="card card-analysis" style="min-height: 115px">
+                                    <div class="card-content">
+                                        <span class="number">{{qty_records}}</span>
+                                        <img src="{% static 'svg/arrow1.svg' %}" class="card-image" />
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header" style="min-height: 115px"></div>
+                                <div class="card card-analysis" style="min-height: 115px">
+                                    <div class="card-content">
+                                        <span class="number">{{qty_records}}</span>
+                                        <img src="{% static 'svg/warning.svg' %}" class="card-image" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header" style="min-height: 115px"></div>
+                                <div class="card card-analysis" style="min-height: 115px">
+                                    <div class="card-content">
+                                        <span class="number">{{qty_records}}</span>
+                                        <img src="{% static 'svg/percentage.svg' %}" class="card-image" />
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -88,7 +97,15 @@
                                                     <i class="tim-icons icon-single-02"></i>
                                                 </span>
                                             </label>
+                                            <label class="btn btn-sm btn-primary btn-simple active" id="0">
+                                                <input type="radio" name="options" checked />
+                                                <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Export</span>
+                                                <span class="d-block d-sm-none">
+                                                    <i class="tim-icons icon-single-02"></i>
+                                                </span>
+                                            </label>
                                         </div>
+
                                     </div>
                                     <script>
 
