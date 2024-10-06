@@ -464,6 +464,12 @@ hr {
   border-top: 0.0625rem solid rgba(34, 42, 66, 0.1);
 }
 
+.number {
+  font-size: 38px;
+  font-weight: bold;
+  display: flex;
+}
+
 small,
 .small {
   font-size: 80%;
@@ -5161,6 +5167,20 @@ input[type="button"].btn-block {
   background-clip: border-box;
   border: 0.0625rem solid rgba(34, 42, 66, 0.05);
   border-radius: 0.2857rem;
+}
+.card-analysis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-image {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
 }
 
 .card>hr {
@@ -20149,8 +20169,9 @@ Copyright (c) 2015 Daniel Eden
 
 .card .image {
   overflow: hidden;
-  height: 200px;
+  height: 50px;
   position: relative;
+  align-items: center;
 }
 
 .card .avatar {
