@@ -146,10 +146,6 @@ def simulation(request):
                     line.record = record
                 Line.objects.bulk_create(lines_to_create)
                
-                print(f"File '{csv_file.name}' processed. Record ID: {record.id}")
-                print(f"Time range: {time_start} to {time_end}")
-                print(f"Number of data points: {len(lines_to_create)}")
-               
                 return render(request, 'simulation.html', {
                     'message': 'File uploaded and processed successfully.',
                     'form': form,
@@ -161,7 +157,7 @@ def simulation(request):
                     'message': 'Error: No valid data found in the CSV file.',
                     'form': form
                 })
-
+                
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         random_number = round(random.uniform(min_range, max_range), 14)
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -179,35 +175,6 @@ def simulation(request):
         'graph_image2': graph_image2
     })
 
-
-            # if csv_file.name.endswith('.csv'):
-            #     decoded_file = csv_file.read().decode('utf-8')
-            #     print("\n\nContenido del archivo CSV:\n", decoded_file, "\n\n")
-            #     io_string = io.StringIO(decoded_file)
-            #     csvFile = csv.reader(io_string, delimiter=',')
-            #     print("\n\n",csvFile, "\n\n")
-            #     for lines in csvFile:
-            #         print(lines)
-                
-            # print("Times: ", times)
-            # print("Amplitudes: ", amplitudes)
-
-
-            # st = read(csv_file) 
-            
-            # for trace in st:
-            #     time_start = trace.stats.starttime
-            #     time_end = trace.stats.endtime
-            #     sampling_rate = trace.stats.sampling_rate
-            #     record = Record.objects.create(time_start=str(time_start), time_end=str(time_end), file_name=csv_file)
-            #     for i, data in enumerate(trace.data):
-            #         current_time = time_start + (i / sampling_rate)
-            #         Line.objects.create(time=str(current_time), amplitude=data, record=record) 
-            #         if (i == 1000):
-            #             break
-    
-    return render(request, 'simulation.html', {'form': form, 'graph_image': graph_image, 'graph_image2': graph_image2})
-
 @csrf_exempt
 def change_parameters(request):
     global min_range, max_range, start
@@ -224,13 +191,33 @@ def reset_parameters():
     max_range = 2.5
     end = True
 
+counter = 0
 @csrf_exempt  
 def get_events(request):
-    simulations = Simulation.objects.all()
-    start_event = simulations.filter(start_event=1)
-    if len(start_event) > 0:
-        end_event = simulations.filter(end_event=1)
-        record = Record.objects.create(time_start=str(start_event.first().time), time_end=str(end_event.first().time))
+    global counter
+    simulations = Simulation.objects.all().order_by('id')
+    start_event = simulations.filter(start_event=True).first()
+    end_event = simulations.filter(end_event=True).first()
+    
+    if start_event and end_event:
+        # Crea un registro en Record con los tiempos de inicio y fin
+        record = Record.objects.create(
+            time_start=start_event.time,
+            time_end=end_event.time,
+            file_name=f'record_{counter}'
+        )
+        counter += 1
+
+        # Filtra los simulations entre el evento de inicio y el evento de fin
+        simulations_in_range = simulations.filter(id__gt=start_event.id, id__lt=end_event.id)
+
+        # Crea los objetos Line para cada simulation en el rango
+        for sim in simulations_in_range:
+            Line.objects.create(
+                record=record,  # Vincula con el record creado
+                time=sim.time,  # Información de la simulación
+                amplitude=sim.amplitude  # Campo adicional
+            )
     Simulation.objects.all().delete()
     return JsonResponse({'status': 'Get Events'})
 

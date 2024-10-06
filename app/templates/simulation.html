@@ -54,7 +54,7 @@
 
       setInterval(function () {
         secondCount++;
-        if (secondCount >= 60) {
+        if (secondCount >= 30) {
           (function () {
             $.post("/get_events/", {}, function (response) {
               console.log(response.status);
@@ -65,7 +65,7 @@
         $("#second-display").text(`Segundo: ${secondCount}`);
       }, 1000);
 
-      setInterval(fetchSimulationData, 100);
+      setInterval(fetchSimulationData, 500);
     </script>
 
     <h1>Load CSV files</h1>
