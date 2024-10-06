@@ -39,7 +39,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="card">
-                                    <div class="card-header" style="min-height: 115px"></div>
+                                    <div class="card-header" style="min-height: 115px">{{qty_records}}</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -119,7 +119,7 @@
                                                     <td>{{ record.time_start|date:"Y-m-d H:i:s" }}</td>
                                                     <td>{{ record.time_end|date:"Y-m-d H:i:s" }}</td>
                                                     <td class="text-center">
-                                                        <button class="btn btn-sm btn-primary">Select</button>
+                                                        <button class="btn btn-sm btn-primary select-record" data-record-id="{{ record.id }}">Select</button>
                                                     </td>
                                                 </tr>
                                             {% empty %}

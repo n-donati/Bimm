@@ -27,7 +27,7 @@ def home(request):
                         for i, data in enumerate(trace.data):
                             current_time = time_start + timezone.timedelta(seconds=i / sampling_rate)
                             Line.objects.create(time=current_time, amplitude=data, record=record)
-                            if i == 100:
+                            if i == 1000:
                                 break
         
         # After processing, redirect to the same page
@@ -35,4 +35,5 @@ def home(request):
     
     # If it's a GET request, or after redirecting from POST
     records = Record.objects.all().order_by('-id')
-    return render(request, 'home.html', {'records': records})
+    qty_records = Record.objects.count()
+    return render(request, 'home.html', {'records': records, 'qty_records': qty_records})
