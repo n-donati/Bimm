@@ -30,5 +30,6 @@ local_settings.py
 # Static files build output
 /staticfiles/
 /playground/data/
+/static/data/processed/
 
 .env
