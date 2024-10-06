@@ -73,134 +73,102 @@ from .models import Record, Line, Simulation
 from .forms import UploadCSVForm
 from playground.pipeline import graphing, fft  # Assuming these functions are in a utils.py file
 
-def simulation(request):
-    global min_range, max_range, start, end
-    graph_image = None
-    graph_image2 = None
-    graph_image3 = None
-    form = UploadCSVForm()
+from django.shortcuts import render
+from .forms import UploadCSVForm
+from datetime import datetime
+import csv
+import pandas as pd
+import base64
+from .processing.pipeline import cleaning, graphing, autoencoder, sta_lta, fft, save_miniseed
 
+def simulation(request):
     if request.method == 'POST':
         form = UploadCSVForm(request.POST, request.FILES)
         if form.is_valid():
             csv_file = request.FILES['file']
-           
+            
             # Read and process the CSV file
             csv_content = csv_file.read().decode('utf-8').splitlines()
             csv_reader = csv.reader(csv_content)
-           
+            
             # Skip header if it exists
-            next(csv_reader, None)
-           
+            header = next(csv_reader, None)
+            
             # Initialize variables
             time_start = None
             time_end = None
-            lines_to_create = []
-            times = []
-            amplitudes = []
-           
+            times_abs = []
+            times_rel = []
+            velocities = []
+            
             # Process each row
             for row in csv_reader:
-                if len(row) >= 2:  # Ensure the row has at least 2 columns
+                if len(row) >= 3:  # Ensure the row has at least 3 columns
                     try:
-                        time = parser.parse(row[0])
-                        amplitude = float(row[1])
-                       
+                        time = datetime.strptime(row[0], "%Y-%m-%dT%H:%M:%S.%f")
+                        time_rel = float(row[1])
+                        velocity = float(row[2])
+                        
                         # Update time range
                         if time_start is None or time < time_start:
                             time_start = time
                         if time_end is None or time > time_end:
                             time_end = time
-                       
-                        # Prepare Line object for bulk creation
-                        lines_to_create.append(Line(
-                            time=time,
-                            amplitude=amplitude
-                        ))
+                        
+                        times_abs.append(time)
+                        times_rel.append(time_rel)
+                        velocities.append(velocity)
 
-                        # Collect data for graphing
-                        times.append((time - time_start).total_seconds())  # Convert to seconds from start
-                        amplitudes.append(amplitude)
-
-                    except (ValueError, parser.ParserError) as e:
+                    except (ValueError, IndexError) as e:
                         print(f"Error processing row: {row}. Error: {e}")
-
             
-            #
-            #
-            #
-            relative_time, absolute_time, amplitude = cleaning(pd.read_csv
-                                                               (csv_file))
-            print("relative_time", relative_time)
-            image_png = graphing(relative_time, amplitude, 'Raw Seismic Data')
-            
-            dataframe = autoencoder(relative_time, absolute_time, amplitude)
-            image_png2 = graphing(relative_time, dataframe, 'Autoencoder Seismic Data')
-            quakes = sta_lta(dataframe)
-
-            count = 1
-            for quake in quakes:
-                print("quake", quake.shape)
-                reconstructed_data, x = fft(relative_time, quake)
-                image_png3 = graphing(x, reconstructed_data, 'Reconstructed Seismic Data')
-                save_miniseed(reconstructed_data, absolute_time, count)
-                count += 1
-            
-            
-            
-            # # Generate graphs
-            # image_png = graphing(times, amplitudes, 'Clean Data Graphic')
-            # reconstructed_data, x = fft(times, amplitudes)
-            # image2_png = graphing(x, reconstructed_data, 'Reconstructed Seismic Data')
-            
-            # Convert images to base64 for HTML inclusion
-            graph_image = base64.b64encode(image_png).decode('utf-8')
-            graph_image2 = base64.b64encode(image_png2).decode('utf-8')
-            graph_image3 = base64.b64encode(image_png3).decode('utf-8')
-           
-            # Create the Record with the correct time range
+            # Check if valid data was found
             if time_start and time_end:
-                record = Record.objects.create(
-                    time_start=time_start,
-                    time_end=time_end,
-                    csv_file_name=csv_file.name
-                )
-               
-                # Bulk create Line objects
-                for line in lines_to_create:
-                    line.record = record
-                Line.objects.bulk_create(lines_to_create)
-               
+                # Create DataFrame for processing
+                df = pd.DataFrame({
+                    'time_abs(%Y-%m-%dT%H:%M:%S.%f)': times_abs,
+                    'time_rel(sec)': times_rel,
+                    'velocity(m/s)': velocities
+                })
+                
+                # Generate graphs
+                relative_time, absolute_time, amplitude = cleaning(df)
+                image_png = graphing(relative_time, amplitude, 'Raw Seismic Data')
+                
+                dataframe = autoencoder(relative_time, absolute_time, amplitude)
+                image_png2 = graphing(relative_time, dataframe, 'Autoencoder Seismic Data')
+                quakes = sta_lta(dataframe)
+
+                image_png3 = None
+                if quakes:
+                    reconstructed_data, x = fft(relative_time, quakes[-1])
+                    image_png3 = graphing(x, reconstructed_data, 'Reconstructed Seismic Data')
+                    
+                    for i, quake in enumerate(quakes, 1):
+                        save_miniseed(quake, absolute_time, i)
+                
+                # Convert images to base64 for HTML inclusion
+                graph_image = base64.b64encode(image_png).decode('utf-8')
+                graph_image2 = base64.b64encode(image_png2).decode('utf-8')
+                graph_image3 = base64.b64encode(image_png3).decode('utf-8') if image_png3 else None
+                
                 return render(request, 'simulation.html', {
-                    'message': 'File uploaded and processed successfully.',
-                    'form': form,
+                    'message': f'File "{csv_file.name}" processed successfully.',
+                    'data_points': len(times_abs),
                     'graph_image': graph_image,
                     'graph_image2': graph_image2,
                     'graph_image3': graph_image3,
+                    'form': form
                 })
             else:
                 return render(request, 'simulation.html', {
                     'message': 'Error: No valid data found in the CSV file.',
                     'form': form
                 })
-                
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        random_number = round(random.uniform(min_range, max_range), 14)
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        line = Simulation.objects.create(time=current_time, amplitude=random_number, start_event=start, end_event=end)
-        start = False
-        end = False
-        data_list.insert(0, {'number': random_number, 'timestamp': current_time})
-        if len(data_list) > 10:
-            data_list.pop()
-        return JsonResponse({'data': data_list})
-   
-    return render(request, 'simulation.html', {
-        'form': form,
-        'graph_image': graph_image,
-        'graph_image2': graph_image2,
-        'graph_image3': graph_image3,
-    })
+    else:
+        form = UploadCSVForm()
+    
+    return render(request, 'simulation.html', {'form': form})
 
 @csrf_exempt
 def change_parameters(request):

@@ -7,6 +7,13 @@ from scipy.signal import welch
 from obspy.signal.trigger import classic_sta_lta, trigger_onset
 import torch
 import xarray as xr
+from .sedenoss.sedenoss.models import FaSNet_base
+import torch
+import xarray as xr
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
 
 def sampling_rate(time):
     # Calculate sampling rate
@@ -43,41 +50,37 @@ def cleaning(df):
     return relative_time, absolute_time, amplitude
 
 def autoencoder(relative_time, absolute_time, amplitude):
-    model = torch.load('encoder.pth')
+    # Load the model
+    model = FaSNet_base()
+    state_dict = torch.load('app/processing/trained_196.pt', map_location=torch.device('cpu'))
+    model.load_state_dict(state_dict, strict=False)
     model.eval()
 
-    ds = xr.Dataset(
-        {
-            'wave': (['relative_time'], amplitude)
-        },
-        coords={
-            'relative_time': (['relative_time'], relative_time), 
-        }
-    )
-
-    ds.to_netcdf('output_data.nc')
-
-    print("CSV data successfully converted to NetCDF format!")
-
-    file_path = 'output_data.nc'
+    # Load and prepare the data
+    file_path = 'app/processing/output_data.nc'
     data = xr.open_dataset(file_path)
+    print(data)
 
     # Reshape the input data
     input_data = data['wave'].values
     input_data = input_data.reshape(-1, input_data.shape[-1])
     input_data = torch.tensor(input_data).float()
 
+    # Save the model's state_dict (weights) and architecture
+    # torch.save(model, 'encoder.pth')
+
     # Process each channel separately
     outputs = []
     with torch.no_grad():
         for channel in input_data:
-            channel_input = channel.unsqueeze(0) 
+            channel_input = channel.unsqueeze(0)  # Add batch dimension
             channel_output = model(channel_input)
             outputs.append(channel_output.squeeze().numpy())
             
-    print('Done infering...')
+    # print('Done infering...')
 
     output_data = np.array(outputs).T
+
 
     min_length = min(len(relative_time), len(output_data))
     absolute_time = absolute_time[:min_length]
@@ -92,7 +95,9 @@ def autoencoder(relative_time, absolute_time, amplitude):
         'velocity(m/s)': output_data.flatten()  
     })
 
+    print("Processing complete. Output saved to 'output_data_with_time.csv'.")
     return combined_df
+
     
 def sta_lta(dataframe):
     absolute_time = dataframe['time_abs(%Y-%m-%dT%H:%M:%S.%f)']
@@ -185,7 +190,7 @@ def save_miniseed(reconstructed_data, time, count):
     st = Stream([trace])
 
     # Guardar los datos reconstruidos como archivo miniSEED
-    output_filename = f"output_reconstructed_data{count}.mseed"
+    output_filename = f"static/data/processed/output_reconstructed_data{count}.mseed"
     st.write(output_filename, format='MSEED')
 
     print(f"Datos reconstruidos guardados en {output_filename}")
