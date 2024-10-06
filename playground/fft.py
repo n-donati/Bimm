@@ -1,9 +1,15 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from obspy import Trace, Stream
 
-# Load CSV data without parsing dates
-filename = "xa.s12.00.mhz.1970-01-19HR00_evid00002" # UPDATE DEPENDING ON FILE
+n1 = "xa.s12.00.mhz.1970-01-19HR00_evid00002"
+n2 = "xa.s12.00.mhz.1970-03-25HR00_evid00003"
+n3 = "xa.s12.00.mhz.1970-03-26HR00_evid00004"
+n4 = "xa.s12.00.mhz.1970-04-25HR00_evid00006"
+n5 = "xa.s12.00.mhz.1970-11-12HR00_evid00015"
+
+filename = n2 # UPDATE DEPENDING ON FILE
 data = pd.read_csv(f"data/{filename}.csv")
 
 # Convert 'Time' column to datetime objects
@@ -35,7 +41,7 @@ fft_result = np.fft.fft(amplitude)
 # Frequencies corresponding to the FFT result
 frequencies = np.fft.fftfreq(len(amplitude), 1 / sampling_rate)
 
-threshold = np.percentile(np.abs(fft_result), 80) # HACE FALTA ENTROPY
+threshold = np.percentile(np.abs(fft_result), 40) # HACE FALTA ENTROPY
 positions = np.where(np.abs(fft_result) >= threshold)[0]
 
 fft_result = fft_result[positions]
@@ -69,3 +75,8 @@ plt.xlabel("Time (seconds)")
 plt.ylabel("Amplitude")
 plt.grid(True)
 plt.show()
+
+trace = Trace()
+trace.data = reconstructed_data.real
+stream = Stream(traces=[trace])
+stream.write("data/output.mseed", format='MSEED')
