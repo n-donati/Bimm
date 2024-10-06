@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from obspy import Stream, Trace, UTCDateTime, read
 
 # Load CSV data without parsing dates
 filename = "xa.s12.00.mhz.1970-01-19HR00_evid00002" # UPDATE DEPENDING ON FILE
-data = pd.read_csv(f"data/{filename}.csv")
+data = pd.read_csv(f"{filename}.csv")
 
 # Convert 'Time' column to datetime objects
 data['Time'] = pd.to_datetime(data[f'time_abs(%Y-%m-%dT%H:%M:%S.%f)'])
@@ -70,3 +71,45 @@ plt.ylabel("Amplitude")
 plt.grid(True)
 plt.show()
 
+reconstructed_amplitude = reconstructed_data.real.astype(np.float32)
+
+# Crea una traza para el miniSEED
+trace = Trace(data=reconstructed_amplitude)  # Datos reconstruidos
+
+# Agrega información de metadatos
+trace.stats.network = 'XX'  # Código de red
+trace.stats.station = 'ABC'  # Código de estación
+trace.stats.location = ''    # Código de ubicación (opcional)
+trace.stats.channel = 'BHZ'  # Canal (BHZ: vertical, alta ganancia)
+trace.stats.starttime = UTCDateTime(data['Time'].iloc[0])  # Usar el primer timestamp
+trace.stats.sampling_rate = sampling_rate  # Usa la tasa de muestreo calculada previamente
+
+# Crear un objeto Stream para guardar la Trace
+st = Stream([trace])
+
+# Guardar los datos reconstruidos como archivo miniSEED
+output_filename = "output_reconstructed_data.mseed"
+st.write(output_filename, format='MSEED')
+
+print(f"Datos reconstruidos guardados en {output_filename}")
+
+# Leer el archivo miniSEED generado
+stream = read(output_filename)
+
+# Obtener la primera traza del stream
+trace = stream[0]
+
+# Imprimir información básica de la traza
+print(f"Datos guardados: {len(trace.data)} puntos de amplitud")
+
+# Verificar que los datos coincidan
+print(f"Primeros 10 datos de amplitud:\n{trace.data[:10]}")
+
+# Graficar los datos para visualización
+plt.figure(figsize=(10, 4))
+plt.plot(trace.times(), trace.data, label="Datos del miniSEED reconstruidos")
+plt.title("Datos del archivo miniSEED reconstruidos")
+plt.xlabel("Tiempo (segundos)")
+plt.ylabel("Amplitud")
+plt.grid(True)
+plt.show()
