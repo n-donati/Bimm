@@ -32,7 +32,29 @@
                             <div class="card-header" style="min-height: 260px">
                                 <h6 class="title d-inline">Automated reporting tool</h6>
                                 <p class="card-category d-inline" style="float: right;">Oct 5</p><br>
-                                {{ openai_response }}
+                                <p id="bot-response"></p>
+                                <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const botResponseElement = document.getElementById('bot-response');
+                                    const message = "Tell me an interesting fact about space exploration.";
+                                    fetch('/generate-response/', {  // Updated URL to match urls.py
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/x-www-form-urlencoded',
+                                            'X-CSRFToken': "{{ csrf_token }}",
+                                        },
+                                        body: 'message=' + encodeURIComponent(message)
+                                    })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        botResponseElement.textContent = data.response;
+                                    })
+                                    .catch(error => {
+                                        console.error('Error:', error);
+                                        botResponseElement.textContent = 'An error occurred while fetching the response.';
+                                    });
+                                });
+                                </script>
                             </div>
                         </div>
                     </div>

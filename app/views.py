@@ -89,3 +89,15 @@ def download_miniseed(request, record_id):
     stream.write(response, format='MSEED')
     
     return response
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .chatgpt import ChatGPT
+
+@csrf_exempt
+def generate_response(request):
+    if request.method == 'POST':
+        message = request.POST.get('message')
+        chatgpt = ChatGPT()  # No need to pass the API key here
+        response = chatgpt.get_response(message)  # Changed from generate_response to get_response
+        return JsonResponse({'response': response})
