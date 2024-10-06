@@ -6,6 +6,17 @@
     <title>Simulation</title>
   </head>
   <body>
+    <h1>Cargar archivo MiniSEED</h1>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %} {{ form.as_p }}
+      <button type="submit">Cargar</button>
+    </form>
+    <ul>
+      {% for record in records %}
+      <li>{{record.time_start}}</li>
+      {% endfor %}
+    </ul>
+    
     <h1>Simulation</h1>
 
     <p id="second-display">Segundo: 0</p>

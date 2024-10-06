@@ -41,6 +41,25 @@ end = False
 
 def simulation(request):
     global end, start
+    form = UploadMiniSeedForm()
+    if request.method == 'POST':
+        form = UploadMiniSeedForm(request.POST, request.FILES)
+        if form.is_valid():
+            mseed_file = request.FILES['file']
+            st = read(mseed_file) 
+            
+            for trace in st:
+                time_start = trace.stats.starttime
+                time_end = trace.stats.endtime
+                sampling_rate = trace.stats.sampling_rate
+                record = Record.objects.create(time_start=str(time_start), time_end=str(time_end))
+                for i, data in enumerate(trace.data):
+                    current_time = time_start + (i / sampling_rate)
+                    Line.objects.create(time=str(current_time), amplitude=data, record=record) 
+                    if (i == 1000):
+                        break
+
+
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         random_number = round(random.uniform(min_range, max_range), 14)
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -54,7 +73,8 @@ def simulation(request):
             data_list.pop()
 
         return JsonResponse({'data': data_list})
-    return render(request, 'simulation.html')
+    
+    return render(request, 'simulation.html', {'form': form})
 
 @csrf_exempt
 def change_parameters(request):
