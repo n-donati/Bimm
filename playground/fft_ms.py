@@ -81,7 +81,7 @@ trace.stats.network = 'XX'  # Código de red
 trace.stats.station = 'ABC'  # Código de estación
 trace.stats.location = ''    # Código de ubicación (opcional)
 trace.stats.channel = 'BHZ'  # Canal (BHZ: vertical, alta ganancia)
-trace.stats.starttime = UTCDateTime(data['Time'].iloc[0])  # Usar el primer timestamp
+trace.stats.starttime = UTCDateTime(data['Time'].iloc[0])  # Usar el primer timestamp es 0
 trace.stats.sampling_rate = sampling_rate  # Usa la tasa de muestreo calculada previamente
 
 # Crear un objeto Stream para guardar la Trace
