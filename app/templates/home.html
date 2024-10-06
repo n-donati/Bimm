@@ -39,22 +39,29 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="card card-analysis" style="min-height: 115px">
-                                        <span class="number">42</span>
-                                        <img src="{% static 'svg/arrow1.svg' %}" alt="Increase arrow1" class="card-image" />
+                                    <div class="card-content">
+                                        <span class="number">{{qty_records}}</span>
+                                        <img src="{% static 'svg/arrow1.svg' %}" class="card-image" />
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="card card-analysis" style="min-height: 115px">
-                                        <span class="number">42</span>
-                                        <img src="{% static 'svg/warning.svg' %}" alt="Warning" class="card-image" />
+                                    <div class="card-content">
+                                        <span class="number">{{qty_records}}</span>
+                                        <img src="{% static 'svg/warning.svg' %}" class="card-image" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="card card-analysis" style="min-height: 115px">
-                                    <span class="number">42</span>
-                                    <img src="{% static 'svg/percentage.svg' %}" alt="Warning" class="card-image" />                                </div>
+                                    <div class="card-content">
+                                        <span class="number">{{qty_records}}</span>
+                                        <img src="{% static 'svg/percentage.svg' %}" class="card-image" />
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="card">

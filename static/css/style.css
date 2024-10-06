@@ -464,12 +464,6 @@ hr {
   border-top: 0.0625rem solid rgba(34, 42, 66, 0.1);
 }
 
-.number {
-  font-size: 38px;
-  font-weight: bold;
-  display: flex;
-}
-
 small,
 .small {
   font-size: 80%;
@@ -5177,10 +5171,21 @@ input[type="button"].btn-block {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.card-content {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
 .card-image {
   width: 20px;
   height: 20px;
-  vertical-align: middle;
+  margin-left: 10px; /* Adds some space between the number and the image */
+}
+
+.number {
+  font-size: 38px;
+  font-weight: bold;
 }
 
 .card>hr {
