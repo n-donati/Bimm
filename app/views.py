@@ -19,6 +19,7 @@ import time
 from django.views.decorators.csrf import csrf_exempt
 import base64
 from playground.pipeline import cleaning, graphing, fft, save_miniseed
+import io
 
 
 
@@ -85,6 +86,23 @@ def simulation(request):
             # Convertir la imagen a base64 para incluirla en HTML
             graph_image = base64.b64encode(image_png).decode('utf-8')
             graph_image2 = base64.b64encode(image2_png).decode('utf-8')
+            
+            print("Nombre del archivo:", csv_file.name)
+            print("Tamaño del archivo:", csv_file.size)
+
+            # if csv_file.name.endswith('.csv'):
+            #     decoded_file = csv_file.read().decode('utf-8')
+            #     print("\n\nContenido del archivo CSV:\n", decoded_file, "\n\n")
+            #     io_string = io.StringIO(decoded_file)
+            #     csvFile = csv.reader(io_string, delimiter=',')
+            #     print("\n\n",csvFile, "\n\n")
+            #     for lines in csvFile:
+            #         print(lines)
+                
+            # print("Times: ", times)
+            # print("Amplitudes: ", amplitudes)
+
+
             # st = read(csv_file) 
             
             # for trace in st:
@@ -135,10 +153,8 @@ def reset_parameters():
 def get_events(request):
     simulations = Simulation.objects.all()
     start_event = simulations.filter(start_event=1)
-    print("\n\n", start_event, "\n\n")
     if len(start_event) > 0:
         end_event = simulations.filter(end_event=1)
-        print("\n\n", end_event, "\n\n")
         record = Record.objects.create(time_start=str(start_event.first().time), time_end=str(end_event.first().time))
     Simulation.objects.all().delete()
     return JsonResponse({'status': 'Get Events'})
