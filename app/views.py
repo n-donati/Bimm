@@ -49,13 +49,12 @@ def home(request):
         
         # After processing, redirect to the same page
         return redirect(reverse('home'))
-    else:
-        form = UploadCSVForm()
+
     
     # If it's a GET request, or after redirecting from POST
     records = Record.objects.all().order_by('-id')
     qty_records = Record.objects.count()
-    return render(request, 'home.html', {'records': records, 'qty_records': qty_records, 'form': form})
+    return render(request, 'home.html', {'records': records, 'qty_records': qty_records})
 
 data_list = []
 min_range = 0
