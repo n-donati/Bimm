@@ -5,6 +5,8 @@ import numpy as np
 from scipy.stats import entropy
 from scipy.signal import welch
 from obspy.signal.trigger import classic_sta_lta, trigger_onset
+import torch
+import xarray as xr
 
 def sampling_rate(time):
     # Calculate sampling rate
@@ -29,18 +31,72 @@ def cleaning(file):
     df['time_rel(sec)'] = df['time_rel(sec)'].fillna(method='ffill')
     df['velocity(m/s)'] = df['velocity(m/s)'].fillna(method='ffill')
 
-    # Drop still null values (if any)
     df = df.dropna()
 
     df['time_abs(%Y-%m-%dT%H:%M:%S.%f)'] = pd.to_datetime(df['time_abs(%Y-%m-%dT%H:%M:%S.%f)'])
     df['time_abs(%Y-%m-%dT%H:%M:%S.%f)'] = (df['time_abs(%Y-%m-%dT%H:%M:%S.%f)'] -       
     df['time_abs(%Y-%m-%dT%H:%M:%S.%f)'].iloc[0]).dt.total_seconds()
-    time = df['time_abs(%Y-%m-%dT%H:%M:%S.%f)'].values  # Time in seconds
+    absolute_time = df['time_abs(%Y-%m-%dT%H:%M:%S.%f)'].values  # Time in seconds
+    relative_time = df['time_rel(sec)'].values  # Time in seconds
     amplitude = df['velocity(m/s)'].values  # Not really amplitude but velocity
-    print('done extracting')
-    return time, amplitude
+    print('done cleaning')
+    return relative_time, absolute_time, amplitude
 
-def sta_lta(denoised_data, time):
+def autoencoder(relative_time, absolute_time, amplitude):
+    model = torch.load('encoder.pth')
+    model.eval()
+
+    ds = xr.Dataset(
+        {
+            'wave': (['relative_time'], amplitude)
+        },
+        coords={
+            'relative_time': (['relative_time'], relative_time), 
+        }
+    )
+
+    ds.to_netcdf('output_data.nc')
+
+    print("CSV data successfully converted to NetCDF format!")
+
+    file_path = 'output_data.nc'
+    data = xr.open_dataset(file_path)
+
+    # Reshape the input data
+    input_data = data['wave'].values
+    input_data = input_data.reshape(-1, input_data.shape[-1])
+    input_data = torch.tensor(input_data).float()
+
+    # Process each channel separately
+    outputs = []
+    with torch.no_grad():
+        for channel in input_data:
+            channel_input = channel.unsqueeze(0) 
+            channel_output = model(channel_input)
+            outputs.append(channel_output.squeeze().numpy())
+            
+    print('Done infering...')
+
+    output_data = np.array(outputs).T
+
+    min_length = min(len(relative_time), len(output_data))
+    absolute_time = absolute_time[:min_length]
+    relative_time = relative_time[:min_length]
+    print("relative_time", relative_time.shape)
+    output_data = output_data[:min_length, 0]
+    print("output_data", output_data.shape)
+
+    combined_df = pd.DataFrame({
+        'time_abs(%Y-%m-%dT%H:%M:%S.%f)': absolute_time,
+        'time_rel(sec)': relative_time,
+        'velocity(m/s)': output_data.flatten()  
+    })
+
+    return combined_df
+    
+def sta_lta(dataframe):
+    absolute_time = dataframe['time_abs(%Y-%m-%dT%H:%M:%S.%f)']
+    denoised_data = dataframe['velocity(m/s)']
     # sta_lta.py
     sta_len = 500 # Longitud de ventana del STA
     lta_len = 5000 # Longitud de ventana del LTA
@@ -67,11 +123,13 @@ def sta_lta(denoised_data, time):
                 break
 
         # Guardar pedazo de gráfica con sismo
-        res.append([denoised_data[beginning:end], time[beginning:end]])
+        res.append(denoised_data[beginning:end])
 
     return res
 
 def fft(time, amplitude):
+    print("time", time.shape)
+    print("amplitude", amplitude.shape)
     # Compute power spectral density (PSD) using Welch's method
     freqs, psd = welch(amplitude, fs=sampling_rate(time))
     # Normalize the PSD
@@ -110,7 +168,7 @@ def fft(time, amplitude):
 
 
 # reconstruct into MINISEED
-def save_miniseed(reconstructed_data, time):
+def save_miniseed(reconstructed_data, time, count):
     reconstructed_amplitude = reconstructed_data.real.astype(np.float32)
 
     # Crea una traza para el miniSEED
@@ -127,7 +185,7 @@ def save_miniseed(reconstructed_data, time):
     st = Stream([trace])
 
     # Guardar los datos reconstruidos como archivo miniSEED
-    output_filename = "output_reconstructed_data.mseed"
+    output_filename = f"output_reconstructed_data{count}.mseed"
     st.write(output_filename, format='MSEED')
 
     print(f"Datos reconstruidos guardados en {output_filename}")
@@ -145,9 +203,15 @@ def save_miniseed(reconstructed_data, time):
     print(f"Primeros 10 datos de amplitud:\n{trace.data[:10]}")
 
 file = 'data/xa.s12.00.mhz.1970-01-19HR00_evid00002.csv'
-time, amplitude = cleaning(file)
-graphing(time, amplitude, 'Raw Seismic Data')
-quakes = sta_lta(denoised_data, time)
-reconstructed_data, x = fft(time, amplitude)
-graphing(x, reconstructed_data, 'Reconstructed Seismic Data')
-save_miniseed(reconstructed_data, time)
+relative_time, absolute_time, amplitude = cleaning(file)
+# graphing(relative_time, amplitude, 'Raw Seismic Data')
+dataframe = autoencoder(relative_time, absolute_time, amplitude)
+quakes = sta_lta(dataframe)
+
+count = 1
+for quake in quakes:
+    print("quake", quake.shape)
+    reconstructed_data, x = fft(relative_time, quake)
+    graphing(x, reconstructed_data, 'Reconstructed Seismic Data')
+    save_miniseed(reconstructed_data, absolute_time, count)
+    count += 1
