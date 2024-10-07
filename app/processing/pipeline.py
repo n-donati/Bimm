@@ -106,7 +106,7 @@ def sta_lta(dataframe):
     sta_len = 500 # Longitud de ventana del STA
     lta_len = 5000 # Longitud de ventana del LTA
     cft = classic_sta_lta(denoised_data, int(sta_len), int(lta_len))
-    thr_on = 3 # On threshold 
+    thr_on = 9 # On threshold 
     thr_off = 1 # Off threshold
     on_off = np.array(trigger_onset(cft, thr_on, thr_off))
 

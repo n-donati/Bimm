@@ -12,7 +12,6 @@ from django.http import HttpResponse
 import csv
 from .forms import UploadCSVForm
 from django.http import JsonResponse
-import random
 from datetime import datetime
 import threading 
 import time
@@ -82,6 +81,9 @@ import base64
 from .processing.pipeline import cleaning, graphing, autoencoder, sta_lta, fft, save_miniseed
 
 def simulation(request):
+    graph_image = None
+    graph_image2 = None
+    graph_image3 = None
     if request.method == 'POST':
         form = UploadCSVForm(request.POST, request.FILES)
         if form.is_valid():
@@ -136,7 +138,7 @@ def simulation(request):
                 image_png = graphing(relative_time, amplitude, 'Raw Seismic Data')
                 
                 dataframe = autoencoder(relative_time, absolute_time, amplitude)
-                image_png2 = graphing(relative_time, dataframe, 'Autoencoder Seismic Data')
+                image_png2 = graphing(relative_time, dataframe['time_rel(sec)'], 'Autoencoder Seismic Data')
                 quakes = sta_lta(dataframe)
 
                 image_png3 = None
@@ -148,9 +150,10 @@ def simulation(request):
                         save_miniseed(quake, absolute_time, i)
                 
                 # Convert images to base64 for HTML inclusion
-                graph_image = base64.b64encode(image_png).decode('utf-8')
-                graph_image2 = base64.b64encode(image_png2).decode('utf-8')
-                graph_image3 = base64.b64encode(image_png3).decode('utf-8') if image_png3 else None
+                graph_image = base64.b64encode(image_png).decode('utf-8') if image_png else ""
+                graph_image2 = base64.b64encode(image_png2).decode('utf-8') if image_png2 else ""
+                graph_image3 = base64.b64encode(image_png3).decode('utf-8') if image_png3 else ""
+
                 
                 return render(request, 'simulation.html', {
                     'message': f'File "{csv_file.name}" processed successfully.',
@@ -168,7 +171,9 @@ def simulation(request):
     else:
         form = UploadCSVForm()
     
-    return render(request, 'simulation.html', {'form': form})
+    return render(request, 'simulation.html', {'form': form, 'graph_image': graph_image,
+                    'graph_image2': graph_image2,
+                    'graph_image3': graph_image3,})
 
 @csrf_exempt
 def change_parameters(request):
@@ -263,3 +268,15 @@ def download_miniseed(request, record_id):
     stream.write(response, format='MSEED')
     
     return response
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .chatgpt import ChatGPT
+
+@csrf_exempt
+def generate_response(request):
+    if request.method == 'POST':
+        message = request.POST.get('message')
+        chatgpt = ChatGPT()  # No need to pass the API key here
+        response = chatgpt.get_response(message)  # Changed from generate_response to get_response
+        return JsonResponse({'response': response})

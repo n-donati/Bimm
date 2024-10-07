@@ -93,5 +93,12 @@
       alt="Graph2"
     />
     {% endif %}
+    {% if graph_image3 %}
+    <h3>Reconstructed Data Graph</h3>
+    <img
+      src="data:image/png;base64,{{ graph_image3 }}"
+      alt="Graph3"
+    />
+    {% endif %}
   </body>
 </html>
