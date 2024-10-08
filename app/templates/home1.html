@@ -31,30 +31,7 @@
                         <div class="card">
                             <div class="card-header" style="min-height: 260px">
                                 <h6 class="title d-inline">Automated reporting tool</h6>
-                                <p class="card-category d-inline" style="float: right;">Oct 5</p><br>
-                                <p id="bot-response"></p>
-                                <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    const botResponseElement = document.getElementById('bot-response');
-                                    const message = "3 of the principal precautions when analyzing seismic data.";
-                                    fetch('/generate-response/', {  // Updated URL to match urls.py
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/x-www-form-urlencoded',
-                                            'X-CSRFToken': "{{ csrf_token }}",
-                                        },
-                                        body: 'message=' + encodeURIComponent(message)
-                                    })
-                                    .then(response => response.json())
-                                    .then(data => {
-                                        botResponseElement.textContent = data.response;
-                                    })
-                                    .catch(error => {
-                                        console.error('Error:', error);
-                                        botResponseElement.textContent = 'An error occurred while fetching the response.';
-                                    });
-                                });
-                                </script>
+                                <p class="card-category d-inline" style="float: right;">Oct 5</p>
                             </div>
                         </div>
                     </div>
@@ -72,7 +49,7 @@
                             <div class="col-md-6">
                                 <div class="card card-analysis" style="min-height: 115px">
                                     <div class="card-content">
-                                        <span class="number">2.9</span>
+                                        <span class="number">6</span>
                                         <img src="{% static 'svg/warning.svg' %}" class="card-image" />
                                     </div>
                                     <p class="card-category d-inline" style="float: center;">average Magnitud level</p>
@@ -83,7 +60,7 @@
                             <div class="col-md-6">
                                 <div class="card card-analysis" style="min-height: 115px">
                                     <div class="card-content">
-                                        <span class="number">93.2</span>
+                                        <span class="number">82</span>
                                         <img src="{% static 'svg/percentage.svg' %}" class="card-image" />
                                     </div>
                                     <p class="card-category d-inline" style="float: center;">Reduction percentage</p>

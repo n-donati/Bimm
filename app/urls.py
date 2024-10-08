@@ -25,4 +25,5 @@ urlpatterns = [
     path('simulation/', views.simulation, name='simulation'),
     path('change_parameters/', views.change_parameters, name='change_parameters'),
     path('get_events/', views.get_events, name='get_events'),
+    path('generate-response/', views.generate_response, name='generate-response'),
 ]
