@@ -27,10 +27,10 @@ This project has two views (or interfaces). The first one is found at path "/sim
 2. Martian Module Interface: Shows the pipeline's processes, displaying graphs of raw data, denoised data, and detected seismic events. Aesthetics are primarily reserved for the Earth interface to emphasize clarity and functionality because "Martian module interface" should not exists, as it ideally only requires to be programmed on the martian module.
 
 Martian module displays raw data:
-![alt text](<WhatsApp Image 2024-10-08 at 20.56.11_d46bc951.jpg>)
+![alt text](<1.jpg>)
 
 Martian module displays FFT:
-![alt text](<WhatsApp Image 2024-10-08 at 20.56.12_164ac3be.jpg>)
+![alt text](<2.jpg>)
 
 Martian module displays Reconstructed data and spectogram:
-![alt text](<WhatsApp Image 2024-10-08 at 20.56.12_a897f91e.jpg>)
+![alt text](<3.jpg>)
